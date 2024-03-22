@@ -31,6 +31,7 @@ class UserAdmin(UserAdmin):
     filter_horizontal = ('groups', 'user_permissions',)
     readonly_fields = ('last_login',)
 
+
    
 
 
