@@ -34,7 +34,7 @@ class GroupAdmin(admin.ModelAdmin):
     
     replacement_count.short_description = 'Кол-во смен'
 
-    def get_queryset(self):
+    def get_queryset(self, obj):
         queryset = groups.Group.objects.annotate(
             replacement_count = Count("replacements__id")
         )

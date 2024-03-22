@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from users.models.users import User
 
-User = get_user_model()
+
 class Group(models.Model):
     organisation = models.ForeignKey(
         'breaks.Organisation', models.CASCADE, related_name='groups',

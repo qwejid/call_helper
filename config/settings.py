@@ -28,14 +28,17 @@ INSTALLED_APPS += [
     'rest_framework',
     'django_filters',
     'corsheaders',
-    'djoser'
+    'djoser',
+    'phonenumber_field',
 ]
 
 # apps
 INSTALLED_APPS += [
     'api',
     'common',
+    'users',
     'breaks',
+    
 ]
 
 # after apps
@@ -89,6 +92,9 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+AUTH_USER_MODEL = 'users.User'
+AUTHENTICATION_BACKENDS = ('users.backends.AuthBackend',)
 
 #####################################
 # DJANGO REST FRAMEWORK
@@ -219,3 +225,5 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=1),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=7),
 }
+
+
