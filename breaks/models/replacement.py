@@ -3,9 +3,32 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+class GroupInfo(models.Model):
+    group = models.OneToOneField(
+        'organisations.Group', models.CASCADE,
+        verbose_name='Группа', primary_key=True
+    )
+    min_active = models.PositiveSmallIntegerField(
+        'Минимальное количество активных сотрудников',
+        null=True, blank=True,
+    )
+    break_start = models.TimeField('Начало обеда', null=True, blank=True)
+    break_end = models.TimeField('Конец обеда', null=True, blank=True)
+    break_max_duration = models.PositiveSmallIntegerField(
+        'Максимальная длительность обеда', null=True, blank=True,
+    )
+
+    class Meta:
+        verbose_name = 'Параметр обеденных перерывов'
+        verbose_name_plural = 'Параметр обеденных перерывов'
+
+    def __str__(self):
+        return f'{self.group} ({self.pk})'
+    
+
 class Replacement(models.Model):
     group = models.ForeignKey(
-        'breaks.Group', models.CASCADE, 'replacements',
+        'breaks.GroupInfo', models.CASCADE, 'replacements',
         verbose_name='Группа',
     )
     date = models.DateField('Дата смены')

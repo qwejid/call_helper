@@ -38,6 +38,7 @@ INSTALLED_APPS += [
     'common',
     'users',
     'breaks',
+    'organisations',
     
 ]
 

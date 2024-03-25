@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin import TabularInline
 from django.urls import reverse
-from breaks.models import organisations, groups, replacement, dicts, breaks
-from django.db.models import Count
+from breaks.models import replacement, dicts, breaks
 from django.utils.html import format_html
 
 ########################################################
@@ -13,50 +12,28 @@ class ReplacementEmployeeInline(TabularInline):
     fields = ('employee', 'status',)
 
 
-
-
 ########################################################
 # MODELS
 ########################################################
 
-@admin.register(organisations.Organisation)
-class OrganisationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'director')
-    filter_horizontal = ('employees', )
-
-@admin.register(groups.Group)
-class GroupAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'manager', 'min_active', 'replacement_count',)
-    list_display_links = ('id', 'name',)
-    search_fields = ("name",)
-    def replacement_count(self, obj):        
-        return obj.replacement_count
-    
-    replacement_count.short_description = 'Кол-во смен'
-
-    def get_queryset(self, obj):
-        queryset = groups.Group.objects.annotate(
-            replacement_count = Count("replacements__id")
-        )
-        return queryset
-
-
 @admin.register(dicts.ReplacementStatus)
 class ReplacementStatusAdmin(admin.ModelAdmin):
     list_display = (
-        'code', 'name', 'sort', 'is_active', )
+        'code', 'name', 'sort', 'is_active',
+    )
 
 @admin.register(dicts.BreakStatus)
 class BreakStatusAdmin(admin.ModelAdmin):
     list_display = (
-        'code', 'name', 'sort', 'is_active',)
+        'code', 'name', 'sort', 'is_active',
+    )
 
 @admin.register(replacement.Replacement)
 class ReplacementAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'group', 'date', 'break_start', 'break_end', 'break_max_duration',
     )
-    autocomplete_fields = ('group',)
+    # autocomplete_fields = ('group',)
     inlines = (
         ReplacementEmployeeInline,
     )
