@@ -5,10 +5,17 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 from django.contrib.admin import TabularInline
 
+########################################################
+# INLINES
+########################################################
 
 class ProfileAdmin(TabularInline):
     model = Profile
     fields = ('telegram_id',)
+
+########################################################
+# MODELS
+########################################################
 
 @admin.register(User)
 class UserAdmin(UserAdmin): 

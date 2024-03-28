@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class GroupInfo(models.Model):
+class GroupInfo(models.Model):    
     group = models.OneToOneField(
         'organisations.Group', models.CASCADE,
         verbose_name='Группа', primary_key=True

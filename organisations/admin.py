@@ -20,11 +20,7 @@ class ProfileBreakInline(admin.StackedInline):
         'min_active',
         'break_start',
         'break_end',
-        'break_max_duration',) 
-    
-    
-
-    
+        'break_max_duration',)     
 
 ########################################################
 # MODELS
@@ -38,15 +34,22 @@ class PositionAdmin(admin.ModelAdmin):
 @admin.register(organisations.Organisation)
 class OrganisationAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'director')
+    list_display_links = ('id', 'name',)
     filter_horizontal = ('employees', )
     inlines = (EmployeeInline,)
+    readonly_fields = (
+        'created_at', 'created_by', 'updated_at', 'updated_by',
+    )
 
 @admin.register(groups.Group)
 class GroupAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'manager', 'min_active',)
+    list_display = ('id', 'name', 'manager',)
     list_display_links = ('id', 'name',)
     search_fields = ("name",)
     inlines = (MemberInline,
                ProfileBreakInline,)
+    readonly_fields = (
+        'created_at', 'created_by', 'updated_at', 'updated_by',
+    )
     
 
