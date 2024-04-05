@@ -37,7 +37,7 @@ class OfferOrganisationView(ListCreateUpdateViewSet):
     )
 
     filterset_class = OfferOrgFilter
-    ordering_fields = ('created_at', 'updated_at',)
+    ordering_fields = ('-created_at', 'updated_at',)
 
     def get_queryset(self):
         qs = Offer.objects.select_related(
@@ -57,8 +57,7 @@ class OfferOrganisationView(ListCreateUpdateViewSet):
     create=extend_schema(summary='Создать оофер в организацию', tags=['Организации: Офферы']),
     partial_update=extend_schema(summary='Изменить оффер в организацию частично', tags=['Организации: Офферы']),
 )
-class OfferUserView(ListCreateUpdateViewSet):
-    permission_classes = [IsOfferManager]
+class OfferUserView(ListCreateUpdateViewSet):   
 
     queryset = Offer.objects.all()
     serializer_class = offers_s.OfferUserToOrgListSerializer

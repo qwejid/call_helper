@@ -36,7 +36,4 @@ class IsOfferManager(BasePermission):
         if obj.organisation.director == request.user:
             return True
         
-        if request.method in SAFE_METHODS:
-            return obj.organisation.employees.all(user=request.user).exists()
-        
         return False
