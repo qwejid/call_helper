@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group
 from phonenumber_field.modelfields import PhoneNumberField
 from django.db import models
 from users.managers import CustomUserManager
@@ -8,12 +8,14 @@ from users.models.profile import Profile
 
 class User(AbstractUser):    
     username = models.CharField(
-        'Никнейм', max_length=65, unique=True, null=True, blank=True
+        'Никнейм', max_length=65, unique=True, null=True, blank=True,
     )
     email = models.EmailField('Почта', unique=True, null=True)
     phone_number = PhoneNumberField('Телефон', unique=True, null=True, blank=True)    
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email']    
+    REQUIRED_FIELDS = ['email']
+
+    is_corporate_account = models.BooleanField('Корпоротивный аккаунт', default=False,)    
 
     objects = CustomUserManager()
 
@@ -33,6 +35,8 @@ def post_save_user(sender, instance, created, **kwargs):
     if not hasattr(instance, 'profile'):
         Profile.objects.create(user=instance)
 
-
+Group.add_to_class(
+    'code', models.CharField(max_length=32, null=True, blank=True,)
+)
 
     

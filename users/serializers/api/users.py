@@ -96,14 +96,16 @@ class MeUpdateSerializer(serializers.ModelSerializer):
             'username',
             'profile',            
         )
+ 
     def update(self, instance, validated_data):        
         # Проверка наличия профиля        
         profile_data = validated_data.pop('profile') if 'profile' in validated_data else None
 
         with transaction.atomic():
             instance = super().update(instance, validated_data)
-            # Обновление профиля
-            self._update_profile(instance.profile, profile_data)
+            if profile_data:
+                # Обновление профиля
+                self._update_profile(instance.profile, profile_data)
         
         return instance          
             
@@ -115,7 +117,13 @@ class MeUpdateSerializer(serializers.ModelSerializer):
         profile_serializer.is_valid(raise_exception=True)
         profile_serializer.save()
 
-
-
+class UserSearchListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'username',
+            'full_name',
+        )
 
 

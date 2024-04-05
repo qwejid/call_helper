@@ -2,13 +2,14 @@ from django.utils import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
 from common.models.mixins import InfoMixin
+from organisations.constants import DIRECTOR_POSITION
 
 User = get_user_model()
 
 class Organisation(InfoMixin):
     name = models.CharField('Название', max_length=255)
     director = models.ForeignKey(
-        User, models.RESTRICT, 'organisations_director', 
+        User, models.RESTRICT, 'organisations_directors', 
         verbose_name='Директор',
     )
     employees = models.ManyToManyField(
@@ -19,10 +20,17 @@ class Organisation(InfoMixin):
     class Meta:
         verbose_name = 'Организация'
         verbose_name_plural = 'Организации'
-        ordering = ('name',)
+        ordering = ('name', 'id',)
 
     def __str__(self):
         return f'{self.name} ({self.pk})'
+    
+    @property
+    def director_employee(self):
+        obj, create = self.employees_info.get_or_create(
+            position_id=DIRECTOR_POSITION, defaults={'user': self.director, }
+        )
+        return obj
 
 class Employee(models.Model):
     organisation = models.ForeignKey(
@@ -34,7 +42,7 @@ class Employee(models.Model):
     position = models.ForeignKey(
         'Position', models.RESTRICT, 'employees',
     )
-    date_joined = models.DateField('Date joined', default=timezone.now())
+    date_joined = models.DateField('Date joined', default=timezone.now)
 
     class Meta:
         verbose_name = 'Сотрудник организации'
@@ -43,4 +51,4 @@ class Employee(models.Model):
         unique_together = (('organisation', 'user'),)
 
     def __str__(self):
-        return f' Employee {self.user}'
+        return f'Employee #{self.pk} {self.user}'

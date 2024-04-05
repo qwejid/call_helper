@@ -7,5 +7,5 @@ from drf_spectacular.utils import extend_schema_view, extend_schema
     list=extend_schema(summary='Список должностей', tags=['Словари'])
 )
 class PositionView(DictListMixin):
-    queryset = Position.objects.filter(is_active=True)
+     model = Position
     

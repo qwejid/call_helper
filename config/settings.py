@@ -106,6 +106,7 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",),
     
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
 
@@ -116,6 +117,7 @@ REST_FRAMEWORK = {
         "rest_framework.parsers.FileUploadParser",
     ],
 
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     "DEFAULT_SCHEMA_CLASS": 'drf_spectacular.openapi.AutoSchema',
     "DEFAULT_PAGINATION_CLASS": "common.pagination.BasePagination",
 }
@@ -183,12 +185,21 @@ SPECTACULAR_SETTINGS = {
         'rest_framework.authentication.BasicAuthentication'],
 
     "SWAGGER_UI_SETTINGS" : {
-        'DeepLinking' : True,
-        'DisplayOperationId' : True,
+        'deepLinking': True,
+        "displayOperationId": True,
+        "syntaxHighlight.active": True,
+        "syntaxHighlight.theme": "arta",
+        "defaultModelsExpandDepth": -1,
+        "displayRequestDuration": True,
+        "filter": True,
+        "requestSnippetsEnabled": True,
     },
 
     "COMPONENT_SPLIT_REQUEST" : True,
     "SORT_OPERATIONS" : False,
+
+    'ENABLE_DJANGO_DEPLOY_CHECK': False,
+    'DISABLE_ERRORS_AND_WARNINGS': True,
     
 }
 
