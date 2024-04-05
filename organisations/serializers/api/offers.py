@@ -85,7 +85,7 @@ class OfferOrgToUserCreateSerializer(ExtendedModelSerializer):
             return instance        
         
 class OfferOrgToUserUpdateSerializer(ExtendedModelSerializer):
-    accept = serializers.BaseSerializer()
+    accept = serializers.BaseSerializer(write_only=True)
 
     class Meta:
         model = Offer
@@ -178,7 +178,7 @@ class OfferUserToOrgCreateSerializer(ExtendedModelSerializer):
         return attrs
     
 class OfferUserToOrgUpdateSerializer(ExtendedModelSerializer):
-    accept = serializers.BooleanField()
+    accept = serializers.BooleanField(write_only=True)
 
     class Meta:
         model = Offer
