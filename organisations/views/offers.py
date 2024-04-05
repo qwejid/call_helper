@@ -49,6 +49,10 @@ class OfferOrganisationView(ListCreateUpdateViewSet):
                 When(Q(user_accept__isnull=True, org_accept=True), then=True,),
                 default=False,
             ),
+            can_reject=Case(
+                When(Q(org_accept__isnull=True, user_accept=True), then=True,),
+                default=False,
+            ),
         )        
         return qs
 

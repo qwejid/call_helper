@@ -8,7 +8,7 @@ from organisations.models import organisations, groups, dicts, offers
 ########################################################
 class EmployeeInline(admin.TabularInline):
     model = organisations.Employee
-    fields = ('employee', 'position', 'date_joined',)
+    fields = ('user', 'position', 'date_joined',)
 
 class OfferInline(admin.TabularInline):
     model = offers.Offer

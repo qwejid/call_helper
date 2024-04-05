@@ -37,14 +37,14 @@ class OfferOrgToUserListSerializer(InfoModelSerializer):
 
 class OfferOrgToUserCreateSerializer(ExtendedModelSerializer):
     users = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.exclude(is_corporate=True), many=True,
+        queryset=User.objects.exclude(is_corporate_account=True), many=True,
         write_only=True,
     )
 
     class Meta:
         model = Offer
         fields = (
-            'users'
+            'users',
         )
 
     def validate(self, attrs):
@@ -85,7 +85,7 @@ class OfferOrgToUserCreateSerializer(ExtendedModelSerializer):
             return instance        
         
 class OfferOrgToUserUpdateSerializer(ExtendedModelSerializer):
-    accept = serializers.BaseSerializer(write_only=True)
+    accept = serializers.BooleanField(write_only=True)
 
     class Meta:
         model = Offer
@@ -161,7 +161,7 @@ class OfferUserToOrgCreateSerializer(ExtendedModelSerializer):
         attrs['user'] = user
 
         # check offer create already
-        offers_exist = self.Meta.objects.filter(            
+        offers_exist = self.Meta.model.objects.filter(            
             organisation=organisation,
             user=user,
         ).exists()
@@ -187,33 +187,33 @@ class OfferUserToOrgUpdateSerializer(ExtendedModelSerializer):
             'accept',
         )
 
-        def to_internal_value(self, data):
-            data = super().to_internal_value(data)
-            data['user_accept'] = data.pop('accept')
-            return data
-        
-        def validate(self, attrs):
-            # Offer from user to org
-            if self.isinstance.is_from_user:
-                if self.instance.org_accept is not None:
-                    raise ParseError(
-                        'Заявка закрыта. Изменение недоступно.'
-                    )
-            else:
-                # Offer from org to user
-                if self.instance.user_accept is not None:
-                    raise ParseError(
-                        'Заявка закрыта. Изменение недоступно.'
-                    )
-            return attrs
-        
-        def update(self, instance, validated_data):
-            with transaction.atomic():
-                instance = super().update(instance, validated_data)
-                # Create employee
-                if instance.user_accept and instance.org_accept:
-                    instance.organisation.employees.add(
-                        instance.user,
-                        through_defaults={'position_id': OPERATOR_POSITION, }
-                    )
-            return instance
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
+        data['user_accept'] = data.pop('accept')
+        return data
+    
+    def validate(self, attrs):
+        # Offer from user to org
+        if self.isinstance.is_from_user:
+            if self.instance.org_accept is not None:
+                raise ParseError(
+                    'Заявка закрыта. Изменение недоступно.'
+                )
+        else:
+            # Offer from org to user
+            if self.instance.user_accept is not None:
+                raise ParseError(
+                    'Заявка закрыта. Изменение недоступно.'
+                )
+        return attrs
+    
+    def update(self, instance, validated_data):
+        with transaction.atomic():
+            instance = super().update(instance, validated_data)
+            # Create employee
+            if instance.user_accept and instance.org_accept:
+                instance.organisation.employees.add(
+                    instance.user,
+                    through_defaults={'position_id': OPERATOR_POSITION, }
+                )
+        return instance
