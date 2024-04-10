@@ -1,5 +1,7 @@
+from crum import get_current_user
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework.filters import OrderingFilter,SearchFilter
+from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count, Case, When
 
@@ -10,7 +12,7 @@ from organisations.permissions import IsMyOrganisation
 from organisations.serializers.api import organisations
 from organisations.models.organisations import Organisation
 
-
+import pdb
 
 
 @extend_schema_view(
@@ -68,7 +70,7 @@ class OrganisationView(CRUViewSet):
                 When(director=self.request.user, then=True),
                 default=False,                
             )
-        )
+        )        
         return queryset
 
     

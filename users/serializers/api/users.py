@@ -62,7 +62,7 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         validate_password(value)
         return value
 
-    def update(seld, instance, validated_data):
+    def update(self, instance, validated_data):        
         password = validated_data.pop('new_password')
         instance.set_password(password)
         instance.save()

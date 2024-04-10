@@ -11,6 +11,18 @@ from users.serializers.nested.users import UserEmployeeSerializer
 
 User = get_user_model()
 
+class EmployeeSearchSerializer(ExtendedModelSerializer):
+    user = UserEmployeeSerializer()
+    position = PositionShortSerializer()
+
+    class Meta:
+        model = Employee
+        fields = (
+            'id',
+            'position',
+            'user',
+        )
+            
 
 class EmployeeListSerializer(ExtendedModelSerializer):
     user = UserEmployeeSerializer()

@@ -1,6 +1,7 @@
 import django_filters
 from django.db.models import Q, F
 
+from organisations.constants import DIRECTOR_POSITION, MANAGER_POSITION
 from organisations.models.groups import Group
 from organisations.models.offers import Offer
 from organisations.models.organisations import Organisation, Employee
@@ -18,19 +19,26 @@ class EmployeeFilter(django_filters.FilterSet):
     only_corporate = django_filters.BooleanFilter(
         'user__is_corporate_account', label='Is corporate account'
     )   
+    can_be_group_manager = django_filters.BooleanFilter(
+        method='can_be_group_manager_filter', label='Can be group manager'
+    )
 
     class Meta:
         model = Employee
         fields = ('only_corporate',)
 
+    def can_be_group_manager_filter(self, queryset, name, value):
+        return queryset.filter(position_id__in=[DIRECTOR_POSITION, MANAGER_POSITION])
+
    
 
 class GroupFilter(django_filters.FilterSet):
     is_member = django_filters.BooleanFilter('is_member',)
+    can_manage = django_filters.BooleanFilter('can_manage',)
 
     class Meta:
         model = Group
-        fields = ('organisation', 'manager', 'is_member',)
+        fields = ('organisation', 'manager',)
 
 class OfferOrgFilter(django_filters.FilterSet):
     TYPE_CHOICES = (
@@ -125,9 +133,9 @@ class OfferUserFilter(django_filters.FilterSet):
 
     def decision_filter(self, queryset, name, value):
         offer_type = self.data.get('type')
-        if offer_type not in ['sent', 'received']:
+        if offer_type not in ('sent', 'received'):
             return queryset
-        if value not in ['accept', 'reject', 'unknown']:
+        if value not in ('accept', 'reject', 'unknown'):
             return queryset
 
         sent_type = bool(offer_type == 'sent')
