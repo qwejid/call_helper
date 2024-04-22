@@ -2,7 +2,8 @@ from django.utils import timezone
 from django.db import models
 from django.contrib.auth import get_user_model
 from common.models.mixins import InfoMixin
-from organisations.constants import DIRECTOR_POSITION
+from organisations.constants import DIRECTOR_POSITION, MANAGER_POSITION, \
+    OPERATOR_POSITION
 
 User = get_user_model()
 
@@ -52,3 +53,22 @@ class Employee(models.Model):
 
     def __str__(self):
         return f'Employee #{self.pk} {self.user}'
+    
+    @property    
+    def is_director(self):
+        if self.position_id == DIRECTOR_POSITION:
+            return True
+        return False
+    
+    @property
+    def is_manager(self):
+        if self.position_id == MANAGER_POSITION:
+            return True
+        return False
+    
+    @property
+    def is_operator(self):
+        if self.position_id == OPERATOR_POSITION:
+            return True
+        return False
+    

@@ -31,7 +31,6 @@ class EmployeeFilter(django_filters.FilterSet):
         return queryset.filter(position_id__in=[DIRECTOR_POSITION, MANAGER_POSITION])
 
    
-
 class GroupFilter(django_filters.FilterSet):
     is_member = django_filters.BooleanFilter('is_member',)
     can_manage = django_filters.BooleanFilter('can_manage',)
@@ -39,6 +38,7 @@ class GroupFilter(django_filters.FilterSet):
     class Meta:
         model = Group
         fields = ('organisation', 'manager',)
+
 
 class OfferOrgFilter(django_filters.FilterSet):
     TYPE_CHOICES = (

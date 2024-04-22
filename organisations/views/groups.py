@@ -3,7 +3,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from common.views.mixins import CRUViewSet
+from common.views.mixins import LCRUViewSet
 from organisations.backends import MyGroup
 from organisations.filters import GroupFilter
 from organisations.models.groups import Group
@@ -19,7 +19,7 @@ from organisations.serializers.api import groups as groups_s
     partial_update=extend_schema(summary='Изменить группу частично', tags=['Организации: Группы']),
     update_settings=extend_schema(summary='Изменить настройки группы', tags=['Организации: Группы']),
 )
-class GroupView(CRUViewSet):
+class GroupView(LCRUViewSet):
     permission_classes = [IsMyGroup]
 
     queryset = Group.objects.all()

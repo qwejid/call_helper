@@ -3,14 +3,14 @@ from django.db.models import Case, When, Q, F, Value
 
 from organisations.models.offers import Offer
 
-class OfferFactory:
+class OfferFactory: # уровень для запросов
         model = Offer
         def org_list(self):
             qs = self.model.objects.select_related(
                   'user',
-            ).prefetch_related(
+            ).prefetch_related( #  связывание объектов происходит на уровне python
                   'organisation',
-            ).annotate(
+            ).annotate( # выполняется на уровне базы данных
                 offer_type=Case(
                      When(~Q(created_by=F('user')), then=Value('sent')), default=Value('received')
                 ),

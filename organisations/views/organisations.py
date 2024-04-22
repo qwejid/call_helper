@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count, Case, When
 
-from common.views.mixins import ListViewSet, CRUViewSet
+from common.views.mixins import ListViewSet, LCRUViewSet
 from organisations.backends import MyOrganisation
 from organisations.filters import OrganisationFilter
 from organisations.permissions import IsMyOrganisation
@@ -31,7 +31,7 @@ class OrganisationSearchView(ListViewSet):
     partial_update=extend_schema(summary='Изменить организацию частично', tags=['Организации']),
     
 )
-class OrganisationView(CRUViewSet):
+class OrganisationView(LCRUViewSet):
     permission_classes = [IsMyOrganisation]
     queryset = Organisation.objects.all()
     serializer_class = organisations.OrganisationListSerializer
