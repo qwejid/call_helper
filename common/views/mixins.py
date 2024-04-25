@@ -23,7 +23,7 @@ class ExtendedView:
         elif user.is_superuser:
             user_roles = (roles.ADMIN_GROUP,)
         else:
-            user_roles = set(user.groups.all()).values_list('code', flat=True)
+            user_roles = set(user.groups.all().values_list('code', flat=True))
 
         if hasattr(self, 'action') and self.action:
             action = self.action
@@ -67,6 +67,7 @@ class ListViewSet(ExtendedGenericViewSet, mixins.ListModelMixin):
 
 class UpdateViewSet(ExtendedGenericViewSet, mixins.UpdateModelMixin):
     pass
+
 
 class DictListMixin(ListViewSet):
     serializer_class = DictMixinSerializer

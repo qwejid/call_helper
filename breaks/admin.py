@@ -1,15 +1,15 @@
 from django.contrib import admin
 from django.contrib.admin import TabularInline
 from django.urls import reverse
-from breaks.models import replacement, dicts, breaks
+from breaks.models import dicts, breaks, replacements
 from django.utils.html import format_html
 
 ########################################################
 # INLINES
 ########################################################
-class ReplacementEmployeeInline(TabularInline):
-    model = replacement.ReplacementEmployee
-    fields = ('employee', 'status',)
+class ReplacementMemberInline(TabularInline):
+    model = replacements.ReplacementMember
+    fields = ('member', 'status',)
 
 
 ########################################################
@@ -28,14 +28,14 @@ class BreakStatusAdmin(admin.ModelAdmin):
         'code', 'name', 'sort', 'is_active',
     )
 
-@admin.register(replacement.Replacement)
+@admin.register(replacements.Replacement)
 class ReplacementAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'group', 'date', 'break_start', 'break_end', 'break_max_duration',
     )
     # autocomplete_fields = ('group',)
     inlines = (
-        ReplacementEmployeeInline,
+        ReplacementMemberInline,
     )
 
 @admin.register(breaks.Break)

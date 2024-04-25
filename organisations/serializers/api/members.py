@@ -33,7 +33,7 @@ class MemberListSerializer(ExtendedModelSerializer):
         fields = (
             'id',
             'employee',
-            'data_joined',
+            'date_joined',
         )
 
 class MemberRetrieveSerializer(ExtendedModelSerializer):
@@ -44,7 +44,7 @@ class MemberRetrieveSerializer(ExtendedModelSerializer):
         fields = (
             'id',
             'employee',
-            'data_joined',
+            'date_joined',
         )
 
 class MemberCreateSerializer(ExtendedModelSerializer):
@@ -73,9 +73,9 @@ class MemberCreateSerializer(ExtendedModelSerializer):
         employees = attrs['employees']
         employees_id_set = {obj.pk for obj in employees}
 
-        org_employees = organisation.employees__info.all()
+        org_employees = organisation.employees_info.all()
         org_employees_id_set = {obj.pk for obj in org_employees}
-
+        
         if employees_id_set - org_employees_id_set:
             raise ParseError(
                 'Некоторые из указанных сотрдуников не существуют в организации. '

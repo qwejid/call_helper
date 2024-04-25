@@ -1,7 +1,9 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from crum import get_current_user
 from rest_framework import serializers
 
+from breaks.serializers.nested.replacements import BreakSettingsSerializer
 from common.serializers.mixins import ExtendedModelSerializer, \
     InfoModelSerializer
 from rest_framework.exceptions import ParseError
@@ -11,6 +13,7 @@ from organisations.serializers.nested.employees import EmployeeShortSerializer
 from organisations.serializers.nested.organisations import \
     OrganisationShortSerializer
 from users.serializers.nested.users import UserShortSerializer
+import pdb
 
 User = get_user_model()
 
@@ -117,3 +120,28 @@ class GroupUpdateSerializer(ExtendedModelSerializer):
                 'Группа с таким названием уже существует.'
             )
         return attrs
+    
+class GroupSettingsUpdateSerializer(ExtendedModelSerializer):
+    breaks_info = BreakSettingsSerializer()
+
+    class Meta:
+        model = Group
+        fields = (
+            'id',
+            'breaks_info',
+        )
+
+    def update(self, instance, validated_data):
+        with transaction.atomic():
+            for key, value in validated_data.items():
+                self._update_group_profile(key, value)
+            return instance
+        
+    def _update_group_profile(self,  param, validated_data):
+        if param in self.fields:
+            serializer = self.fields[param]
+            instance, c = serializer.Meta.model.objects.get_or_create(
+                group_id=self.get_from_url('pk')
+            )
+            serializer.update(instance, validated_data)
+        return

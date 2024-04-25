@@ -1,12 +1,18 @@
 from crum import get_current_user
+
 from common.serializers.mixins import ExtendedModelSerializer, \
     InfoModelSerializer
+
 from rest_framework import serializers
+from rest_framework.exceptions import ParseError
+
 from organisations.constants import DIRECTOR_POSITION
 from organisations.models.organisations import Organisation
+
 from users.serializers.nested.users import UserShortSerializer
+
 from django.contrib.auth import get_user_model
-from rest_framework.exceptions import ParseError
+
 from django.db import transaction
 import pdb
 

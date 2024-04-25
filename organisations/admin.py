@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from breaks.models.replacement import GroupInfo
+from breaks.models.replacements import GroupInfo
 from organisations.models import organisations, groups, dicts, offers
 
 ########################################################
@@ -50,9 +50,9 @@ class GroupAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'manager',)
     list_display_links = ('id', 'name',)
     search_fields = ("name",)
-    inlines = (
-            ProfileBreakInline,
+    inlines = (        
             MemberInline,
+            ProfileBreakInline,
                )
     readonly_fields = (
         'created_at', 'created_by', 'updated_at', 'updated_by',
