@@ -9,7 +9,13 @@ from django.utils.html import format_html
 ########################################################
 class ReplacementMemberInline(TabularInline):
     model = replacements.ReplacementMember
-    fields = ('member', 'status',)
+    fields = (
+        'member', 'status',
+        'time_online', 'time_offline', 'time_break_start', 'time_break_end',
+    )
+    readonly_fields = (
+        'time_online', 'time_offline', 'time_break_start', 'time_break_end',
+    )
 
 
 ########################################################
@@ -33,9 +39,11 @@ class ReplacementAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'group', 'date', 'break_start', 'break_end', 'break_max_duration',
     )
-    # autocomplete_fields = ('group',)
     inlines = (
         ReplacementMemberInline,
+    )
+    readonly_fields = (
+        'created_at', 'created_by', 'updated_at', 'updated_by',
     )
 
 @admin.register(breaks.Break)
@@ -45,7 +53,7 @@ class BreakAdmin(admin.ModelAdmin):
     )
     list_filter = ('status',)
     empty_value_display = 'Unknown'
-    radio_fields = {'status' : admin.VERTICAL}
+    # radio_fields = {'status' : admin.VERTICAL}
     def replacement_link(self, obj):
         link = reverse(
             'admin:breaks_replacement_change', args=[obj.replacement.id]

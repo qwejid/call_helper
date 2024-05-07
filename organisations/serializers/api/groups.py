@@ -12,8 +12,6 @@ from organisations.models.organisations import Organisation
 from organisations.serializers.nested.employees import EmployeeShortSerializer
 from organisations.serializers.nested.organisations import \
     OrganisationShortSerializer
-from users.serializers.nested.users import UserShortSerializer
-import pdb
 
 User = get_user_model()
 
@@ -40,6 +38,7 @@ class GroupListSerializer(InfoModelSerializer):
 
 
 class GroupRetrieveSerializer(InfoModelSerializer):
+    breaks_info = BreakSettingsSerializer(allow_null=True)
     organisation = OrganisationShortSerializer()
     manager = EmployeeShortSerializer()
     pax = serializers.IntegerField()    
@@ -50,6 +49,7 @@ class GroupRetrieveSerializer(InfoModelSerializer):
         model = Group
         fields = (
             'id',
+            'breaks_info',
             'name',
             'organisation',
             'manager',

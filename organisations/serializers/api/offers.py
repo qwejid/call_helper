@@ -54,7 +54,7 @@ class OfferOrgToUserCreateSerializer(ExtendedModelSerializer):
         attrs['org_accept'] = True
 
         # check offer create already
-        offers_exist = self.Meta.objects.filter(
+        offers_exist = self.Meta.model.objects.filter(
             user__in=users,
             organisation=organisation,
         )
@@ -93,13 +93,9 @@ class OfferOrgToUserUpdateSerializer(ExtendedModelSerializer):
             'id',
             'accept',
         )
-
-    def to_internal_value(self, data):
-        data = super().to_internal_value(data)
-        data['org_accept'] = data.pop('accept')
-        return data
-    
+        
     def validate(self, attrs):
+        attrs['org_accept'] = attrs.pop('accept')
         # Offer from org to user
         if self.instance.is_from_org:
             if self.instance.user_accept is not None:
@@ -185,16 +181,12 @@ class OfferUserToOrgUpdateSerializer(ExtendedModelSerializer):
         fields = (
             'id',
             'accept',
-        )
-
-    def to_internal_value(self, data):
-        data = super().to_internal_value(data)
-        data['user_accept'] = data.pop('accept')
-        return data
+        )   
     
     def validate(self, attrs):
+        attrs['user_accept'] = attrs.pop('accept')
         # Offer from user to org
-        if self.isinstance.is_from_user:
+        if self.instance.is_from_user:
             if self.instance.org_accept is not None:
                 raise ParseError(
                     'Заявка закрыта. Изменение недоступно.'

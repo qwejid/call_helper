@@ -67,7 +67,7 @@ class GroupView(LCRUViewSet):
             _is_member_count = Count(
                 'members', filter=(Q(members__user=self.request.user)), distinct=True,
             ),
-            _is_member=Case(
+            is_member=Case(
                 When(Q(_is_member_count__gt=0), then=True),
                 default=False,
             ),

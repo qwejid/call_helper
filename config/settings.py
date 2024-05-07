@@ -30,6 +30,7 @@ INSTALLED_APPS += [
     'corsheaders',
     'djoser',
     'phonenumber_field',
+    'django_generate_series'
 ]
 
 # apps
