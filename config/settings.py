@@ -1,7 +1,7 @@
 from datetime import timedelta
 import os
 import environ
-# import sentry_sdk
+import sentry_sdk
 
 root = environ.Path(__file__) - 2
 env = environ.Env()
@@ -26,14 +26,14 @@ INSTALLED_APPS = [
 
 # packages
 INSTALLED_APPS += [
-    'corsheaders',  # Заголовки CORS для управления междоменными запросами
     'auditlog',  # Регистрация изменений в моделях
     'rest_framework',  # REST framework для создания API
     'django_filters',  # Фильтры для REST framework
+    'corsheaders',  # Заголовки CORS для управления междоменными запросами
     'djoser',  # Djoser для обработки аутентификации и управления пользователями через REST API
     'phonenumber_field',  # Поле для ввода телефонных номеров
     'django_generate_series',  # Генерация временных рядов и последовательностей в PostgreSQL
-    # "debug_toolbar",  # Инструмент отладки Django
+    "debug_toolbar",  # Инструмент отладки Django
 ]
 
 # apps
@@ -52,8 +52,7 @@ INSTALLED_APPS += [
 
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
-    # "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -61,6 +60,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "crum.CurrentRequestUserMiddleware",
     "auditlog.middleware.AuditlogMiddleware",
 ]
@@ -130,20 +130,20 @@ REST_FRAMEWORK = {
 }
 
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
-]
+# AUTH_PASSWORD_VALIDATORS = [
+#     {
+#         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+#     },
+#     {
+#         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+#     },
+#     {
+#         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+#     },
+#     {
+#         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+#     },
+# ]
 
 
 #####################################
@@ -250,13 +250,14 @@ SIMPLE_JWT = {
 ################################
 # SENTRY
 ################################
-# if DEBUG:
-#     sentry_sdk.init(
-#         dsn=env.str('SENTRY_DSN', ''),
-#         traces_sample_rate=1.0,
-#         profiles_sample_rate=1.0,
-#     )
+if DEBUG:
+    sentry_sdk.init(
+        dsn=env.str('SENTRY_DSN', ''),
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+    )
 
-#     INTERNAL_IPS = [
-#         '127.0.0.1',
-#     ]
+    # Настройка Django Debug Toolbar
+    INTERNAL_IPS = [
+        '127.0.0.1',
+    ]

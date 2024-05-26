@@ -7,6 +7,10 @@ from django.db.models.signals import post_save
 from users.models.profile import Profile
 
 
+class Group(Group):
+    code = models.CharField('Code', max_length=32, null=True, unique=True,)
+
+
 class User(AbstractUser):
     username = models.CharField(
         'Никнейм', max_length=65, unique=True, null=True, blank=True,
@@ -19,6 +23,7 @@ class User(AbstractUser):
     is_corporate_account = models.BooleanField('Корпоротивный аккаунт', default=False,)
 
     objects = CustomUserManager()
+    groups = models.ManyToManyField(Group, related_name='groups', verbose_name='Группы', blank=True,)
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -36,8 +41,3 @@ class User(AbstractUser):
 def post_save_user(sender, instance, created, **kwargs):
     if not hasattr(instance, 'profile'):
         Profile.objects.create(user=instance)
-
-
-Group.add_to_class(
-    'code', models.CharField(max_length=32, null=True, blank=True,)
-)

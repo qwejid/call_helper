@@ -1,0 +1,62 @@
+[
+{
+  "model": "breaks.replacementstatus",
+  "pk": "break",
+  "fields": {
+    "name": "Обеденный перерыв",
+    "sort": null,
+    "is_active": true,
+    "color": "#BDECB6"
+  }
+},
+{
+  "model": "breaks.replacementstatus",
+  "pk": "busy",
+  "fields": {
+    "name": "Занят",
+    "sort": null,
+    "is_active": true,
+    "color": "#BDECB6"
+  }
+},
+{
+  "model": "breaks.replacementstatus",
+  "pk": "confirmed",
+  "fields": {
+    "name": "Подтвержден",
+    "sort": null,
+    "is_active": true,
+    "color": "#BDECB6"
+  }
+},
+{
+  "model": "breaks.replacementstatus",
+  "pk": "created",
+  "fields": {
+    "name": "Создано",
+    "sort": null,
+    "is_active": true,
+    "color": "#BDECB6"
+  }
+},
+{
+  "model": "breaks.replacementstatus",
+  "pk": "offline",
+  "fields": {
+    "name": "Оффлайн",
+    "sort": null,
+    "is_active": true,
+    "color": "#BDECB6"
+  }
+},
+{
+  "model": "breaks.replacementstatus",
+  "pk": "online",
+  "fields": {
+    "name": "Онлайн",
+    "sort": null,
+    "is_active": true,
+    "color": "#BDECB6"
+  }
+}
+]
