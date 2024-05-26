@@ -33,12 +33,15 @@ class BreakMeRetrieveSerializer(InfoModelSerializer):
 
 
 class BreakMeUpdateSerializer(InfoModelSerializer):
+    status = serializers.CharField(required=False, allow_null=True)
+
     class Meta:
         model = Break
         fields = (
             'id',
             'break_start',
             'break_end',
+            'status',
         )
 
         extra_kwargs = {
@@ -71,41 +74,41 @@ class BreakMeUpdateSerializer(InfoModelSerializer):
                 'У вас нет доступа к текущей смене.'
             )
 
-        if attrs['break_start'] < replacement.break_start:
-            raise ParseError(
-                'Время начала не должно быть меньше времени, указанного в смене.'
-            )
-        if attrs['break_end'] > replacement.break_end:
-            raise ParseError(
-                'Время окончания не должно быть больше времени, указанного в смене.'
-            )
-        if attrs['break_start'] >= attrs['break_end']:
-            raise ParseError(
-                'Время начала не должно быть больше времени окончания.'
-            )
-
-        max_duration = datetime.timedelta(minutes=replacement.break_max_duration)
-        break_start = datetime.datetime.combine(datetime.date.today(), attrs['break_start'])
-        break_end = datetime.datetime.combine(datetime.date.today(), attrs['break_end'])
-        if break_start + max_duration < break_end:
-            raise ParseError(
-                'Продолжительность обеда превышает максимальное установленное значение.'
-            )
-
-        free_breaks = replacement.free_breaks_available(
-            attrs['break_start'], attrs['break_end'], instance_id
-        )
-        if free_breaks <= replacement.min_active:
-            raise ParseError('Нет свободных мест на выбранный интервал.')
-        attrs['replacement'] = replacement
-        attrs['member'] = member
-
-        if not instance_id:
-            if replacement.breaks.filter(member=member).exists():
+        if 'break_start' in attrs and 'break_end' in attrs:
+            if attrs['break_start'] < replacement.break_start:
                 raise ParseError(
-                    'Вы уже зарезервировали обеденный перерыв.'
+                    'Время начала не должно быть меньше времени, указанного в смене.'
+                )
+            if attrs['break_end'] > replacement.break_end:
+                raise ParseError(
+                    'Время окончания не должно быть больше времени, указанного в смене.'
+                )
+            if attrs['break_start'] >= attrs['break_end']:
+                raise ParseError(
+                    'Время начала не должно быть больше времени окончания.'
                 )
 
+            max_duration = datetime.timedelta(minutes=replacement.break_max_duration)
+            break_start = datetime.datetime.combine(datetime.date.today(), attrs['break_start'])
+            break_end = datetime.datetime.combine(datetime.date.today(), attrs['break_end'])
+            if break_start + max_duration < break_end:
+                raise ParseError(
+                    'Продолжительность обеда превышает максимальное установленное значение.'
+                )
+
+            free_breaks = replacement.free_breaks_available(
+                attrs['break_start'], attrs['break_end'], instance_id
+            )
+            if free_breaks <= replacement.min_active:
+                raise ParseError('Нет свободных мест на выбранный интервал.')
+            attrs['replacement'] = replacement
+            attrs['member'] = member
+
+            if not instance_id:
+                if replacement.breaks.filter(member=member).exists():
+                    raise ParseError(
+                        'Вы уже зарезервировали обеденный перерыв.'
+                    )
         return attrs
 
     def validate_status(self, value):
@@ -123,7 +126,7 @@ class BreakMeUpdateSerializer(InfoModelSerializer):
             now = datetime.datetime.now().astimezone()
             break_start = datetime.datetime.combine(
                 self.instance.replacement.date, self.instance.break_start
-            )
+            ).astimezone()
             if now + datetime.timedelta(minutes=5) < break_start:
                 raise ParseError(
                     'Время обеденного перерыва ещё не началось.'
@@ -190,7 +193,7 @@ class BreakScheduleSerializer(serializers.Serializer):
         break_start = instance.break_start.strftime('%H:%M')
         break_end = instance.break_end.strftime('%H:%M')
         value = f'{break_start} - {break_end}'
-        color = '#78ffae'
+        color = instance.member.status.color
         return self._convert_to_cell(value, color, span)
 
     def get_post_blank(self, instance):
