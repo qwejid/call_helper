@@ -15,8 +15,8 @@ from users.serializers.nested.users import UserShortSerializer
 
 User = get_user_model()
 
-# From Org to User
 
+# From Org to User
 class OfferOrgToUserListSerializer(InfoModelSerializer):
     user = UserShortSerializer()
     can_accept = serializers.BooleanField()
@@ -34,6 +34,7 @@ class OfferOrgToUserListSerializer(InfoModelSerializer):
             'can_accept',
             'can_reject',
         )
+
 
 class OfferOrgToUserCreateSerializer(ExtendedModelSerializer):
     users = serializers.PrimaryKeyRelatedField(
@@ -75,15 +76,16 @@ class OfferOrgToUserCreateSerializer(ExtendedModelSerializer):
                 f'{user_error}'
             )
         return attrs
-    
+
     def create(self, validated_data):
         users = validated_data.pop('users')
         with transaction.atomic():
             for user in users:
                 validated_data['user'] = user
                 instance = super().create(validated_data)
-            return instance        
-        
+            return instance
+
+
 class OfferOrgToUserUpdateSerializer(ExtendedModelSerializer):
     accept = serializers.BooleanField(write_only=True)
 
@@ -93,7 +95,7 @@ class OfferOrgToUserUpdateSerializer(ExtendedModelSerializer):
             'id',
             'accept',
         )
-        
+
     def validate(self, attrs):
         attrs['org_accept'] = attrs.pop('accept')
         # Offer from org to user
@@ -109,7 +111,7 @@ class OfferOrgToUserUpdateSerializer(ExtendedModelSerializer):
                     'Заявка закрыта. Изменение недоступно.'
                 )
         return attrs
-    
+
     def update(self, instance, validated_data):
         with transaction.atomic():
             instance = super().update(instance, validated_data)
@@ -120,26 +122,28 @@ class OfferOrgToUserUpdateSerializer(ExtendedModelSerializer):
                     through_defaults={'position_id': OPERATOR_POSITION, }
                 )
         return instance
-    
 
-    # From User to Org
+
+# From User to Org
 class OfferUserToOrgListSerializer(InfoModelSerializer):
     organisation = OrganisationShortSerializer()
     can_accept = serializers.BooleanField()
     can_reject = serializers.BooleanField()
+
     class Meta:
         model = Offer
         fields = (
-        'id',
-        'organisation',
-        'org_accept',
-        'user_accept',
-        'created_at',
-        'updated_at',
-        'can_accept',
-        'can_reject',
-    )
-            
+            'id',
+            'organisation',
+            'org_accept',
+            'user_accept',
+            'created_at',
+            'updated_at',
+            'can_accept',
+            'can_reject',
+        )
+
+
 class OfferUserToOrgCreateSerializer(ExtendedModelSerializer):
 
     class Meta:
@@ -157,22 +161,23 @@ class OfferUserToOrgCreateSerializer(ExtendedModelSerializer):
         attrs['user'] = user
 
         # check offer create already
-        offers_exist = self.Meta.model.objects.filter(            
+        offers_exist = self.Meta.model.objects.filter(
             organisation=organisation,
             user=user,
         ).exists()
-        
-        if offers_exist:            
-            raise ParseError(f'Заявка в эту организацию была отправлена ранее.')
-        
+
+        if offers_exist:
+            raise ParseError('Заявка в эту организацию была отправлена ранее.')
+
         # check user in org already
         already_in_org = organisation.employees_info.filter(user=user).exists()
         if already_in_org:
             raise ParseError(
-                f'Вы уже являетесь сотрудником организации.'
+                'Вы уже являетесь сотрудником организации.'
             )
         return attrs
-    
+
+
 class OfferUserToOrgUpdateSerializer(ExtendedModelSerializer):
     accept = serializers.BooleanField(write_only=True)
 
@@ -181,8 +186,8 @@ class OfferUserToOrgUpdateSerializer(ExtendedModelSerializer):
         fields = (
             'id',
             'accept',
-        )   
-    
+        )
+
     def validate(self, attrs):
         attrs['user_accept'] = attrs.pop('accept')
         # Offer from user to org
@@ -198,7 +203,7 @@ class OfferUserToOrgUpdateSerializer(ExtendedModelSerializer):
                     'Заявка закрыта. Изменение недоступно.'
                 )
         return attrs
-    
+
     def update(self, instance, validated_data):
         with transaction.atomic():
             instance = super().update(instance, validated_data)

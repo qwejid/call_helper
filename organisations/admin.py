@@ -6,17 +6,22 @@ from organisations.models import organisations, groups, dicts, offers
 ########################################################
 # INLINES
 ########################################################
+
+
 class EmployeeInline(admin.TabularInline):
     model = organisations.Employee
     fields = ('user', 'position', 'date_joined',)
+
 
 class OfferInline(admin.TabularInline):
     model = offers.Offer
     fields = ('org_accept', 'user', 'user_accept',)
 
+
 class MemberInline(admin.TabularInline):
     model = groups.Member
     fields = ('employee', 'date_joined',)
+
 
 class ProfileBreakInline(admin.StackedInline):
     model = GroupInfo
@@ -24,16 +29,19 @@ class ProfileBreakInline(admin.StackedInline):
         'min_active',
         'break_start',
         'break_end',
-        'break_max_duration',)     
+        'break_max_duration',)
 
 ########################################################
 # MODELS
 ########################################################
+
+
 @admin.register(dicts.Position)
 class PositionAdmin(admin.ModelAdmin):
     list_display = (
         'code', 'name', 'sort', 'is_active',
     )
+
 
 @admin.register(organisations.Organisation)
 class OrganisationAdmin(admin.ModelAdmin):
@@ -45,19 +53,21 @@ class OrganisationAdmin(admin.ModelAdmin):
         'created_at', 'created_by', 'updated_at', 'updated_by',
     )
 
+
 @admin.register(groups.Group)
 class GroupAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'manager',)
     list_display_links = ('id', 'name',)
     search_fields = ("name",)
-    inlines = (        
-            MemberInline,
-            ProfileBreakInline,
-               )
+    inlines = (
+        MemberInline,
+        ProfileBreakInline,
+    )
     readonly_fields = (
         'created_at', 'created_by', 'updated_at', 'updated_by',
     )
-    
+
+
 @admin.register(offers.Offer)
 class OffersAdmin(admin.ModelAdmin):
     list_display = ('id', 'organisation', 'org_accept', 'user', 'user_accept',)

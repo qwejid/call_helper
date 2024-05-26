@@ -5,6 +5,7 @@ from rest_framework import mixins
 from common.serializers.mixins import DictMixinSerializer
 from common.constants import roles
 
+
 class ExtendedView:
     multi_permission_classes = None
     multi_serializer_class = None
@@ -18,7 +19,7 @@ class ExtendedView:
         )
         if not self.multi_serializer_class:
             return self.serializer_class
-        
+
         user = self.request.user
         if user.is_anonymous:
             user_roles = (roles.PUBLIC_GROUP,)
@@ -61,11 +62,14 @@ class ExtendedView:
 
         return [permission() for permission in self.permission_classes]
 
+
 class ExtendedGenericViewSet(ExtendedView, GenericViewSet):
     pass
 
+
 class ListViewSet(ExtendedGenericViewSet, mixins.ListModelMixin):
     pass
+
 
 class UpdateViewSet(ExtendedGenericViewSet, mixins.UpdateModelMixin):
     pass
@@ -81,7 +85,7 @@ class DictListMixin(ListViewSet):
             '"%s" should either include attribute `model`' % self.__class__.__name__
         )
         return self.model.objects.filter(is_active=True)
-    
+
 
 class LCRUViewSet(ExtendedGenericViewSet,
                   mixins.CreateModelMixin,
@@ -90,15 +94,18 @@ class LCRUViewSet(ExtendedGenericViewSet,
                   mixins.ListModelMixin, ):
     pass
 
+
 class LCRUDViewSet(LCRUViewSet,
                    mixins.DestroyModelMixin, ):
     pass
+
 
 class LCUViewSet(ExtendedGenericViewSet,
                  mixins.ListModelMixin,
                  mixins.CreateModelMixin,
                  mixins.UpdateModelMixin, ):
     pass
+
 
 class LCDViewSet(ExtendedGenericViewSet,
                  mixins.ListModelMixin,
@@ -110,15 +117,17 @@ class LCDViewSet(ExtendedGenericViewSet,
 class ExtendedGenericAPIView(ExtendedView, GenericAPIView):
     pass
 
+
 class ExtendedRetrieveUpdateAPIView(mixins.RetrieveModelMixin,
                                     mixins.UpdateModelMixin,
                                     ExtendedGenericAPIView,
                                     ):
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
-    
+
     def patch(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
+
 
 class ExtendedCRUAPIView(mixins.RetrieveModelMixin,
                          mixins.CreateModelMixin,

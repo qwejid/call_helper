@@ -2,21 +2,21 @@ from datetime import datetime, timedelta
 
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.db.models import TimeField, OuterRef, Count, Q, F, Subquery, \
-    IntegerField, ExpressionWrapper, DateTimeField
-from django.db.models.functions import Coalesce
+from django.db.models import OuterRef, Count, Q, F, Subquery, \
+    ExpressionWrapper, DateTimeField
 from django.utils import timezone
 from django_generate_series.models import generate_series
+from model_utils import FieldTracker
 
-from breaks import constants
-from breaks.constants import REPLACEMENT_MEMBER_ONLINE, REPLACEMENT_MEMBER_BUSY, \
+from breaks.constants import REPLACEMENT_MEMBER_ONLINE, \
     REPLACEMENT_MEMBER_BREAK, REPLACEMENT_MEMBER_OFFLINE
 from breaks.models.breaks import Break
 from common.models.mixins import InfoMixin
 
 User = get_user_model()
 
-class GroupInfo(models.Model):    
+
+class GroupInfo(models.Model):
     group = models.OneToOneField(
         'organisations.Group', models.CASCADE, related_name='breaks_info',
         verbose_name='Группа', primary_key=True,
@@ -37,7 +37,7 @@ class GroupInfo(models.Model):
 
     def __str__(self):
         return f'{self.group}'
-    
+
 
 class Replacement(InfoMixin):
     group = models.ForeignKey(
@@ -49,13 +49,13 @@ class Replacement(InfoMixin):
     break_end = models.TimeField('Конец обеда')
     break_max_duration = models.PositiveSmallIntegerField(
         'Макс. продолжительность обеда',
-    )   
+    )
     min_active = models.PositiveSmallIntegerField(
         'Мин. число активных сотрудников', null=True, blank=True,
     )
     members = models.ManyToManyField(
         'organisations.Member', related_name='replacement',
-        verbose_name='Участники смены', through='ReplacementMember'        
+        verbose_name='Участники смены', through='ReplacementMember'
     )
 
     class Meta:
@@ -65,7 +65,7 @@ class Replacement(InfoMixin):
 
     def __str__(self):
         return f'Смена №{self.pk} для {self.group}'
-    
+
     def free_breaks_available(self, break_start, break_end, exclude_break_id=None):
         breaks_sub_qs = Subquery(
             Break.objects
@@ -104,11 +104,29 @@ class Replacement(InfoMixin):
             breaks=Subquery(replacement_sub_qs.values('free_breaks')),
         ).order_by(
             'breaks'
-        )        
+        )
 
         return data_seq_qs.first().breaks
 
-    
+    def get_member_by_user(self, user):
+        return self.members_info.filter(
+            member__employee__user=user
+        ).first()
+
+    def get_break_for_user(self, user):
+        return self.breaks.filter(member__member__employee__user=user).first()
+
+    def get_break_status_for_user(self, user):
+        member = self.get_member_by_user(user)
+        break_obj = self.get_break_for_user(user)
+        now = timezone.now().astimezone()
+        if not member or self.date != now.date():
+            return None
+        if not break_obj:
+            return 'create'
+        return 'update'
+
+
 class ReplacementMember(models.Model):
     member = models.ForeignKey(
         'organisations.Member', models.CASCADE, 'replacements_info',
@@ -120,9 +138,8 @@ class ReplacementMember(models.Model):
     )
     status = models.ForeignKey(
         'breaks.ReplacementStatus', models.RESTRICT, 'members',
-        verbose_name='Статус',
+        verbose_name='Статус', blank=True
     )
-
     time_online = models.DateTimeField(
         'Начал смену', null=True, blank=True, editable=False
     )
@@ -136,30 +153,35 @@ class ReplacementMember(models.Model):
         'Вернулся с обеда', null=True, blank=True, editable=False
     )
 
+    tracker = FieldTracker()
+
     class Meta:
         verbose_name = 'Смена - участник группы'
-        verbose_name_plural = 'Смены - участники группы'        
+        verbose_name_plural = 'Смены - участники группы'
 
     def __str__(self):
         return f'Участник смены {self.member.employee.user.full_name} ({self.pk})'
 
     def save(self, *args, **kwargs):
-        if self.pk:
-            now = timezone.now()
+        if not self.pk:
+            self.status_id = REPLACEMENT_MEMBER_OFFLINE
+        else:
+            if self.tracker.has_changed('status_id'):
+                now = timezone.now()
 
-            if self.status_id == REPLACEMENT_MEMBER_ONLINE:
-                if not self.time_online:
-                    self.time_online = now
-                if self.time_break_start and not self.time_break_end:
-                    self.time_break_end = now
-                
-            if self.status_id == REPLACEMENT_MEMBER_BREAK and not self.time_break_start:
-                self.time_break_start = now
+                if self.status_id == REPLACEMENT_MEMBER_ONLINE:
+                    if not self.time_online:
+                        self.time_online = now
+                    if self.time_break_start and not self.time_break_end:
+                        self.time_break_end = now
 
-            if self.status_id == REPLACEMENT_MEMBER_OFFLINE:
-                if not self.time_offline:
-                    self.time_offline = now
-                if self.time_break_start and not self.time_break_end:
-                    self.time_break_end = now
-        
+                if self.status_id == REPLACEMENT_MEMBER_BREAK and not self.time_break_start:
+                    self.time_break_start = now
+
+                if self.status_id == REPLACEMENT_MEMBER_OFFLINE:
+                    if not self.time_offline:
+                        self.time_offline = now
+                    if self.time_break_start and not self.time_break_end:
+                        self.time_break_end = now
+
         super().save(*args, **kwargs)

@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 
+
 class BasePagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 1000
@@ -11,5 +12,5 @@ class BasePagination(PageNumberPagination):
             'previous': self.get_previous_link(),
             'count': self.page.paginator.count,
             'pages': self.page.paginator.num_pages,
-            'results': data            
+            'results': data
         })

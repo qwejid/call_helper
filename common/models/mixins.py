@@ -5,6 +5,7 @@ from django.utils import timezone
 
 User = get_user_model()
 
+
 class BaseDictModelMixin(models.Model):
     code = models.CharField('Код', max_length=16, primary_key=True,)
     name = models.CharField('Название', max_length=32,)
@@ -12,19 +13,20 @@ class BaseDictModelMixin(models.Model):
     is_active = models.BooleanField('Активность', default=True)
     color = models.CharField('Цвет', max_length=12, default='#BDECB6')
 
-    class Meta:        
+    class Meta:
         ordering = ('sort',)
         abstract = True
 
     def __str__(self):
         return f'{self.code} ({self.name})'
-    
+
+
 class DateMixin(models.Model):
     created_at = models.DateTimeField(
-        'Created at', null = True, blank = False
+        'Created at', null=True, blank=False
     )
     updated_at = models.DateTimeField(
-        'Updated at', null = True, blank = False
+        'Updated at', null=True, blank=False
     )
 
     class Meta:
@@ -35,7 +37,8 @@ class DateMixin(models.Model):
             self.created_at = timezone.now()
         self.updated_at = timezone.now()
         return super(DateMixin, self).save(*args, **kwargs)
-    
+
+
 class InfoMixin(DateMixin):
     created_by = models.ForeignKey(
         User, models.SET_NULL, 'created_%(app_label)s_%(class)s',
@@ -60,6 +63,3 @@ class InfoMixin(DateMixin):
             self.created_by = user
         self.update_by = user
         super().save(*args, **kwargs)
-
-
-        

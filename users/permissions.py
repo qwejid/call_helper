@@ -3,8 +3,7 @@ from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 class IsNotCorporate(BasePermission):
     message = ('У вас корпоротивный аккаунт. Данное действие не доступно. '
-              'Обратитесь к админимтратору для изменения данных профиля.')
-       
+               'Обратитесь к админимтратору для изменения данных профиля.')
 
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:

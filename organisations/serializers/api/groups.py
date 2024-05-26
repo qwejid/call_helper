@@ -19,7 +19,7 @@ User = get_user_model()
 class GroupListSerializer(InfoModelSerializer):
     organisation = OrganisationShortSerializer()
     manager = EmployeeShortSerializer()
-    pax = serializers.IntegerField()    
+    pax = serializers.IntegerField()
     can_manage = serializers.BooleanField()
     is_member = serializers.BooleanField()
 
@@ -41,7 +41,7 @@ class GroupRetrieveSerializer(InfoModelSerializer):
     breaks_info = BreakSettingsSerializer(allow_null=True)
     organisation = OrganisationShortSerializer()
     manager = EmployeeShortSerializer()
-    pax = serializers.IntegerField()    
+    pax = serializers.IntegerField()
     can_manage = serializers.BooleanField()
     is_member = serializers.BooleanField()
 
@@ -70,7 +70,7 @@ class GroupCreateSerializer(ExtendedModelSerializer):
             'name',
         )
 
-        extra_kwargs = {                
+        extra_kwargs = {
             'manager': {'required': False, 'allow_null': True, },  # ярлык, позволяющий указать произвольные дополнительные аргументы ключевого слова в полях
         }
 
@@ -81,7 +81,7 @@ class GroupCreateSerializer(ExtendedModelSerializer):
                 'Неверно выбрана организация.'
             )
         return value
-    
+
     def validate(self, attrs):
         org = attrs['organisation']
         # Specified manager or organisation director
@@ -92,8 +92,8 @@ class GroupCreateSerializer(ExtendedModelSerializer):
             raise ParseError(
                 'Администратором может быть только сотрудник организации или руководитель.'
             )
-        
-         # Check name duplicate
+
+        # Check name duplicate
         if self.Meta.model.objects.filter(
                 organisation=org, name=attrs['name']
         ).exists():
@@ -120,7 +120,8 @@ class GroupUpdateSerializer(ExtendedModelSerializer):
                 'Группа с таким названием уже существует.'
             )
         return attrs
-    
+
+
 class GroupSettingsUpdateSerializer(ExtendedModelSerializer):
     breaks_info = BreakSettingsSerializer()
 
@@ -136,8 +137,8 @@ class GroupSettingsUpdateSerializer(ExtendedModelSerializer):
             for key, value in validated_data.items():
                 self._update_group_profile(key, value)
             return instance
-        
-    def _update_group_profile(self,  param, validated_data):
+
+    def _update_group_profile(self, param, validated_data):
         if param in self.fields:
             serializer = self.fields[param]
             instance, c = serializer.Meta.model.objects.get_or_create(

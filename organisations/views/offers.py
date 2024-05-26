@@ -1,9 +1,8 @@
-from django.db.models import Case, When, Q, F
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework.filters import OrderingFilter
 
-from common.views.mixins import  LCUViewSet
+from common.views.mixins import LCUViewSet
 from organisations.backends import OwnedByOrganisation
 from organisations.factory.offers import OfferFactory
 from organisations.filters import OfferOrgFilter, OfferUserFilter
@@ -31,7 +30,7 @@ class OfferOrganisationView(LCUViewSet):
     lookup_url_kwarg = 'offer_id'
     http_method_names = ('get', 'post', 'patch')
 
-    filter_backends = (        
+    filter_backends = (
         DjangoFilterBackend,
         OrderingFilter,
         OwnedByOrganisation,
@@ -43,12 +42,13 @@ class OfferOrganisationView(LCUViewSet):
     def get_queryset(self):
         return OfferFactory().org_list()
 
+
 @extend_schema_view(
     list=extend_schema(summary='Список офферов пользователя', tags=['Организации: Офферы']),
     create=extend_schema(summary='Создать оофер в организацию', tags=['Организации: Офферы']),
     partial_update=extend_schema(summary='Изменить оффер в организацию частично', tags=['Организации: Офферы']),
 )
-class OfferUserView(LCUViewSet):   
+class OfferUserView(LCUViewSet):
 
     queryset = Offer.objects.all()
     serializer_class = offers_s.OfferUserToOrgListSerializer
@@ -70,5 +70,3 @@ class OfferUserView(LCUViewSet):
 
     def get_queryset(self):
         return OfferFactory().user_list()
-
-        

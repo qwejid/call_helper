@@ -27,7 +27,7 @@ class BreakMeView(ExtendedCRUAPIView):
     def get_object(self):
         user = self.request.user
         replacement_id = self.request.parser_context['kwargs'].get('pk')
-        
+
         return get_object_or_404(
             Break, Q(replacement_id=replacement_id, member__member__employee__user=user)
         )
@@ -51,7 +51,7 @@ class BreakSheduleView(ListViewSet):
         serializer = self.get_serializer(qs, many=True).data
         serializer.insert(0, title)
         return Response(serializer)
-    
+
     def get_queryset(self):
         replacement_id = self.request.parser_context['kwargs'].get('pk')
         return Break.objects.prefetch_related(

@@ -7,6 +7,8 @@ from django.utils.html import format_html
 ########################################################
 # INLINES
 ########################################################
+
+
 class ReplacementMemberInline(TabularInline):
     model = replacements.ReplacementMember
     fields = (
@@ -28,11 +30,6 @@ class ReplacementStatusAdmin(admin.ModelAdmin):
         'code', 'name', 'sort', 'is_active',
     )
 
-@admin.register(dicts.BreakStatus)
-class BreakStatusAdmin(admin.ModelAdmin):
-    list_display = (
-        'code', 'name', 'sort', 'is_active',
-    )
 
 @admin.register(replacements.Replacement)
 class ReplacementAdmin(admin.ModelAdmin):
@@ -46,20 +43,16 @@ class ReplacementAdmin(admin.ModelAdmin):
         'created_at', 'created_by', 'updated_at', 'updated_by',
     )
 
+
 @admin.register(breaks.Break)
 class BreakAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'replacement_link', 'break_start', 'break_end', "status",
+        'id', 'replacement_link', 'break_start', 'break_end',
     )
-    list_filter = ('status',)
     empty_value_display = 'Unknown'
-    # radio_fields = {'status' : admin.VERTICAL}
+
     def replacement_link(self, obj):
         link = reverse(
             'admin:breaks_replacement_change', args=[obj.replacement.id]
         )
         return format_html('<a href="{}">{}</a>', link, obj.replacement)
-
-
-
-

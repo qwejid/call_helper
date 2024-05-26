@@ -1,7 +1,5 @@
-from crum import get_current_user
 from drf_spectacular.utils import extend_schema_view, extend_schema
-from rest_framework.filters import OrderingFilter,SearchFilter
-from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter, SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count, Case, When
 
@@ -12,8 +10,6 @@ from organisations.permissions import IsMyOrganisation
 from organisations.serializers.api import organisations
 from organisations.models.organisations import Organisation
 
-import pdb
-
 
 @extend_schema_view(
     list=extend_schema(summary='Список организаций Search', tags=['Словари'])
@@ -21,7 +17,7 @@ import pdb
 class OrganisationSearchView(ListViewSet):
     queryset = Organisation.objects.all()
     serializer_class = organisations.OrganisationSearchListSerializer
-    
+
 
 @extend_schema_view(
     list=extend_schema(summary='Список организаций', tags=['Организации']),
@@ -29,7 +25,7 @@ class OrganisationSearchView(ListViewSet):
     create=extend_schema(summary='Создать организацию', tags=['Организации']),
     update=extend_schema(summary='Обновить организацию', tags=['Организации']),
     partial_update=extend_schema(summary='Изменить организацию частично', tags=['Организации']),
-    
+
 )
 class OrganisationView(LCRUViewSet):
     permission_classes = [IsMyOrganisation]
@@ -53,24 +49,18 @@ class OrganisationView(LCRUViewSet):
         MyOrganisation,
     )
 
-    
     filterset_class = OrganisationFilter
     ordering = ('name', 'id')
 
     def get_queryset(self):
         queryset = Organisation.objects.select_related(
             'director',
-        ).prefetch_related(
-            'employees',
-            'groups',
         ).annotate(
             pax=Count('employees', distinct=True),
             groups_count=Count('groups', distinct=True),
             can_manage=Case(
                 When(director=self.request.user, then=True),
-                default=False,                
+                default=False,
             )
-        )        
+        )
         return queryset
-
-    

@@ -5,14 +5,14 @@ from rest_framework import serializers
 from rest_framework.exceptions import ParseError
 
 from common.serializers.mixins import ExtendedModelSerializer
-from organisations.constants import DIRECTOR_POSITION, OPERATOR_POSITION, \
-    MANAGER_POSITION
+from organisations.constants import OPERATOR_POSITION
 from organisations.models.dicts import Position
 from organisations.models.organisations import Employee, Organisation
 from organisations.serializers.nested.dicts import PositionShortSerializer
 from users.serializers.nested.users import UserEmployeeSerializer
 
 User = get_user_model()
+
 
 class EmployeeSearchSerializer(ExtendedModelSerializer):
     user = UserEmployeeSerializer()
@@ -25,7 +25,7 @@ class EmployeeSearchSerializer(ExtendedModelSerializer):
             'position',
             'user',
         )
-            
+
 
 class EmployeeListSerializer(ExtendedModelSerializer):
     user = UserEmployeeSerializer()
@@ -111,19 +111,20 @@ class EmployeeUpdateSerializer(ExtendedModelSerializer):
     position = serializers.PrimaryKeyRelatedField(
         queryset=Position.objects.filter(is_active=True)
     )
+
     class Meta:
         model = Employee
         fields = (
             'position',
         )
 
-    def validate(self,attrs):
+    def validate(self, attrs):
         if self.instance.is_director:
             raise ParseError(
                 'Руководитель организации недоступен для изменений.'
             )
         return attrs
-    
+
     def validate_position(self, value):
         if value.code == OPERATOR_POSITION:
             if self.instance.is_manager:
@@ -135,7 +136,8 @@ class EmployeeUpdateSerializer(ExtendedModelSerializer):
                         f'менеджером в следующих группах:  {error_group_text}.'
                     )
         return value
-    
+
+
 class EmployeeDeleteSerializer(serializers.Serializer):
     def validate(self, attrs):
         if self.instance.is_director:

@@ -2,10 +2,11 @@ from rest_framework import serializers
 from users.serializers.nested.users import UserShortSerializer
 from rest_framework.generics import get_object_or_404
 
+
 class ExtendedModelSerializer(serializers.ModelSerializer):
     class Meta:
         abstract = True
-    
+
     def get_from_url(self, lookup_field):
         assert 'view' in self.context, (
             'No view context in "%s". '
@@ -18,16 +19,13 @@ class ExtendedModelSerializer(serializers.ModelSerializer):
         )
         value = self.context['view'].kwargs.get(lookup_field)
         return value
-    
+
     def get_object_from_url(self, model, lookup_field='pk', model_field='pk'):
         obj_id = self.get_from_url(lookup_field)
         obj = get_object_or_404(
             queryset=model.objects.all(), **{model_field: obj_id}
         )
         return obj
-
-
-
 
 
 class InfoModelSerializer(ExtendedModelSerializer):
@@ -37,9 +35,8 @@ class InfoModelSerializer(ExtendedModelSerializer):
     class Meta:
         abstract = True
 
+
 class DictMixinSerializer(serializers.Serializer):
     code = serializers.CharField()
     name = serializers.CharField()
-    
-
-    
+    color = serializers.CharField()

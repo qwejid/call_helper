@@ -1,15 +1,16 @@
 from django.db.models import Q
 from rest_framework.filters import BaseFilterBackend
-import pdb
 
 #############################################################
 # Пользовательская общая фильтрация
 #############################################################
 
+
 class OwnedByOrganisation(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         org_id = request.parser_context['kwargs'].get('pk')
         return queryset.filter(organisation_id=org_id)
+
 
 class OwnedByGroup(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):

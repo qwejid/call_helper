@@ -2,22 +2,24 @@ import datetime
 
 from crum import get_current_user
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ParseError
 
+from breaks.constants import REPLACEMENT_MEMBER_BREAK, \
+    REPLACEMENT_MEMBER_ONLINE, REPLACEMENT_MEMBER_OFFLINE
 from breaks.models.breaks import Break
 from breaks.models.replacements import Replacement, ReplacementMember
 from breaks.serializers.nested.replacements import ReplacementShortSerializer
-from common.serializers.mixins import InfoModelSerializer, DictMixinSerializer, \
-    ExtendedModelSerializer
+
+from common.serializers.mixins import InfoModelSerializer
 from common.validators import Time15MinutesValidator
 
 User = get_user_model()
 
 
 class BreakMeRetrieveSerializer(InfoModelSerializer):
-    status = DictMixinSerializer()
     replacement = ReplacementShortSerializer()
 
     class Meta:
@@ -27,11 +29,10 @@ class BreakMeRetrieveSerializer(InfoModelSerializer):
             'replacement',
             'break_start',
             'break_end',
-            'status',
         )
 
-class BreakMeUpdateSerializer(InfoModelSerializer):
 
+class BreakMeUpdateSerializer(InfoModelSerializer):
     class Meta:
         model = Break
         fields = (
@@ -64,7 +65,7 @@ class BreakMeUpdateSerializer(InfoModelSerializer):
             raise ParseError(
                 'Время резервирования перерыва уже закончилось или ещё не началось.'
             )
-        
+
         if not member:
             raise ParseError(
                 'У вас нет доступа к текущей смене.'
@@ -82,18 +83,18 @@ class BreakMeUpdateSerializer(InfoModelSerializer):
             raise ParseError(
                 'Время начала не должно быть больше времени окончания.'
             )
-        
+
         max_duration = datetime.timedelta(minutes=replacement.break_max_duration)
         break_start = datetime.datetime.combine(datetime.date.today(), attrs['break_start'])
         break_end = datetime.datetime.combine(datetime.date.today(), attrs['break_end'])
         if break_start + max_duration < break_end:
-             raise ParseError(
+            raise ParseError(
                 'Продолжительность обеда превышает максимальное установленное значение.'
             )
-        
+
         free_breaks = replacement.free_breaks_available(
             attrs['break_start'], attrs['break_end'], instance_id
-            )
+        )
         if free_breaks <= replacement.min_active:
             raise ParseError('Нет свободных мест на выбранный интервал.')
         attrs['replacement'] = replacement
@@ -104,9 +105,58 @@ class BreakMeUpdateSerializer(InfoModelSerializer):
                 raise ParseError(
                     'Вы уже зарезервировали обеденный перерыв.'
                 )
-        
+
         return attrs
-    
+
+    def validate_status(self, value):
+        if value not in ['break_start', 'break_end']:
+            raise ParseError(
+                'Статус должен быть break_start или break_end'
+            )
+
+        if self.instance.member.status_id == REPLACEMENT_MEMBER_OFFLINE:
+            raise ParseError(
+                'Невозможно начать обед, пока Ваш статус Офлайн.'
+            )
+
+        if value == 'break_start':
+            now = datetime.datetime.now().astimezone()
+            break_start = datetime.datetime.combine(
+                self.instance.replacement.date, self.instance.break_start
+            )
+            if now + datetime.timedelta(minutes=5) < break_start:
+                raise ParseError(
+                    'Время обеденного перерыва ещё не началось.'
+                )
+            if self.instance.member.time_break_start:
+                raise ParseError(
+                    'Обеденный перерыв уже начался.'
+                )
+        else:
+            if not self.instance.member.time_break_start:
+                raise ParseError(
+                    'Обеденный перерыв ещё не начался.'
+                )
+            if self.instance.member.time_break_end:
+                raise ParseError(
+                    'Обеденный перерыв уже закончился.'
+                )
+        return value
+
+    def update(self, instance, validated_data):
+        status = validated_data.pop('status', None)
+        with transaction.atomic():
+            instance = super().update(instance, validated_data)
+            if status:
+                member = instance.member
+                if status == 'break_start':
+                    member.status_id = REPLACEMENT_MEMBER_BREAK
+                elif status == 'break_end':
+                    member.status_id = REPLACEMENT_MEMBER_ONLINE
+                member.save()
+        return instance
+
+
 class BreakScheduleSerializer(serializers.Serializer):
     final_line = serializers.SerializerMethodField()
 
@@ -120,7 +170,7 @@ class BreakScheduleSerializer(serializers.Serializer):
         if post_blank['colspan'] > 0:
             line.append(post_blank)
         return line
-    
+
     def get_instance(self, instance):
         result = self._convert_to_cell(
             value=instance.member.member.employee.user.full_name,
@@ -128,13 +178,13 @@ class BreakScheduleSerializer(serializers.Serializer):
             span=2,
         )
         return result
-    
+
     def get_pre_blank(self, instance):
         span = self._get_span_count(
             instance.replacement.break_start, instance.break_start
         )
         return self._convert_to_cell(span=span)
-    
+
     def get_break(self, instance):
         span = self._get_span_count(instance.break_start, instance.break_end)
         break_start = instance.break_start.strftime('%H:%M')
@@ -142,24 +192,24 @@ class BreakScheduleSerializer(serializers.Serializer):
         value = f'{break_start} - {break_end}'
         color = instance.status.color
         return self._convert_to_cell(span=span, value=value, color=color)
-    
+
     def get_post_blank(self, instance):
         span = self._get_span_count(
             instance.break_end, instance.replacement.break_end
         )
         return self._convert_to_cell(span=span)
-    
+
     def _convert_to_cell(self, value='', color='#fff', span=None):
-        obj = {'value': value, 'color': color,}
+        obj = {'value': value, 'color': color, }
         if span is not None:
             obj['colspan'] = span
         return obj
-    
+
     def _get_span_count(self, start_board, start_instance):
         board_minutes = start_board.hour * 60 + start_board.minute
         instance_minutes = start_instance.hour * 60 + start_instance.minute
         span = int((instance_minutes - board_minutes) / 15)
         return span
-    
+
     def to_representation(self, instance):
         return self.fields['final_line'].to_representation(instance)

@@ -17,7 +17,7 @@ BREAK_ALL_STATUSES = [
     BREAK_CANCELLED_STATUS,
 ]
 BREAK_CREATED_DEFAULT = {
-                    'name': 'Создано',
-                    'is_active' : True,
-                    'sort' : 100,
-                }
+    'name': 'Создано',
+    'is_active': True,
+    'sort': 100,
+}

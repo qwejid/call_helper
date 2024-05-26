@@ -38,18 +38,20 @@ class GroupView(LCRUViewSet):
     http_method_names = ('get', 'post', 'patch')
 
     filter_backends = (
-        OrderingFilter, # Простое упорядочивание результатов, управляемое параметрами запроса.
-        SearchFilter, # Класс SearchFilterподдерживает простой поиск на основе одного параметра запроса
+        OrderingFilter,  # Простое упорядочивание результатов, управляемое параметрами запроса.
+        SearchFilter,  # Класс SearchFilterподдерживает простой поиск на основе одного параметра запроса
         DjangoFilterBackend,
         MyGroup,
     )
-    search_fields = ('name',) # Атрибут для SearchFilter по которому будет осуществляться поиск
+    search_fields = ('name',)  # Атрибут для SearchFilter по которому будет осуществляться поиск
     filterset_class = GroupFilter
-    ordering = ('name', 'id',) # Параметр запроса для OrderingFilter
+    ordering = ('name', 'id',)  # Параметр запроса для OrderingFilter
 
     def get_queryset(self):
         queryset = Group.objects.select_related(
             'manager',
+            'manager__user',
+            'manager__position',
         ).prefetch_related(
             'organisation',
             'organisation__director',
@@ -64,7 +66,7 @@ class GroupView(LCRUViewSet):
                 ),
                 default=False,
             ),
-            _is_member_count = Count(
+            is_member_count=Count(
                 'members', filter=(Q(members__user=self.request.user)), distinct=True,
             ),
             is_member=Case(

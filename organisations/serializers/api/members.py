@@ -11,6 +11,7 @@ from organisations.serializers.nested.employees import EmployeeShortSerializer
 
 User = get_user_model()
 
+
 class MemberSearchSerializer(ExtendedModelSerializer):
     full_name = serializers.CharField(source='employee.user.full_name')
     username = serializers.CharField(source='employee.user.username')
@@ -25,6 +26,7 @@ class MemberSearchSerializer(ExtendedModelSerializer):
             'position',
         )
 
+
 class MemberListSerializer(ExtendedModelSerializer):
     employee = EmployeeShortSerializer()
 
@@ -35,6 +37,7 @@ class MemberListSerializer(ExtendedModelSerializer):
             'employee',
             'date_joined',
         )
+
 
 class MemberRetrieveSerializer(ExtendedModelSerializer):
     employee = EmployeeShortSerializer()
@@ -47,6 +50,7 @@ class MemberRetrieveSerializer(ExtendedModelSerializer):
             'date_joined',
         )
 
+
 class MemberCreateSerializer(ExtendedModelSerializer):
     employees = serializers.PrimaryKeyRelatedField(
         queryset=Employee.objects.all(), many=True, write_only=True
@@ -58,7 +62,7 @@ class MemberCreateSerializer(ExtendedModelSerializer):
             'id',
             'employees',
         )
-    
+
     def validate(self, attrs):
         try:
             group = self.get_object_from_url(Group)
@@ -67,7 +71,7 @@ class MemberCreateSerializer(ExtendedModelSerializer):
             raise ParseError(
                 'Ой, что-то не так. Текущая организация не найдена.'
             )
-        
+
         attrs['group'] = group
 
         employees = attrs['employees']
@@ -75,15 +79,15 @@ class MemberCreateSerializer(ExtendedModelSerializer):
 
         org_employees = organisation.employees_info.all()
         org_employees_id_set = {obj.pk for obj in org_employees}
-        
+
         if employees_id_set - org_employees_id_set:
             raise ParseError(
                 'Некоторые из указанных сотрдуников не существуют в организации. '
                 'Проверьте введенные данные.'
             )
-        
+
         return attrs
-    
+
     def create(self, validated_data):
         employees = validated_data.pop('employees')
         group = validated_data.pop('group')

@@ -2,22 +2,24 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.exceptions import ParseError
-from users.serializers.nested.profile import ProfileShortSerializer, ProfileUpdatetSerializer 
+from users.serializers.nested.profile import ProfileShortSerializer, ProfileUpdatetSerializer
 from django.db import transaction
 
 User = get_user_model()
 
+
 class RegistrationSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
     password = serializers.CharField(
-        style = {'input_type' : 'password'}, write_only=True
+        style={'input_type': 'password'}, write_only=True
     )
+
     class Meta:
         model = User
         fields = (
             'id',
             'first_name',
-            'last_name',            
+            'last_name',
             'email',
             'password',
         )
@@ -29,14 +31,15 @@ class RegistrationSerializer(serializers.ModelSerializer):
                 'Пользователь с такой почтой уже зарегистрирован'
             )
         return email
-    
+
     def validate_password(self, value):
         validate_password(value)
         return value
-    
+
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         return user
+
 
 class ChangePasswordSerializer(serializers.ModelSerializer):
     old_password = serializers.CharField(write_only=True)
@@ -55,27 +58,29 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         if not user.check_password(old_password):
             raise ParseError(
                 'Проверьте правильность текущего пароля'
-            )     
+            )
         return attrs
-    
+
     def validate_new_password(self, value):
         validate_password(value)
         return value
 
-    def update(self, instance, validated_data):        
+    def update(self, instance, validated_data):
         password = validated_data.pop('new_password')
         instance.set_password(password)
         instance.save()
         return instance
 
+
 class MeSerializer(serializers.ModelSerializer):
     profile = ProfileShortSerializer()
+
     class Meta:
         model = User
         fields = (
             'id',
             'first_name',
-            'last_name',            
+            'last_name',
             'email',
             'phone_number',
             'username',
@@ -83,22 +88,24 @@ class MeSerializer(serializers.ModelSerializer):
             'date_joined',
         )
 
+
 class MeUpdateSerializer(serializers.ModelSerializer):
     profile = ProfileUpdatetSerializer()
+
     class Meta:
         model = User
         fields = (
             'id',
             'first_name',
-            'last_name',            
+            'last_name',
             'email',
             'phone_number',
             'username',
-            'profile',            
+            'profile',
         )
- 
-    def update(self, instance, validated_data):        
-        # Проверка наличия профиля        
+
+    def update(self, instance, validated_data):
+        # Проверка наличия профиля
         profile_data = validated_data.pop('profile') if 'profile' in validated_data else None
 
         with transaction.atomic():
@@ -106,16 +113,16 @@ class MeUpdateSerializer(serializers.ModelSerializer):
             if profile_data:
                 # Обновление профиля
                 self._update_profile(instance.profile, profile_data)
-        
-        return instance          
-            
-        
-    def _update_profile(self, profile, data):        
+
+        return instance
+
+    def _update_profile(self, profile, data):
         profile_serializer = ProfileUpdatetSerializer(
             instance=profile, data=data, partial=True
         )
         profile_serializer.is_valid(raise_exception=True)
         profile_serializer.save()
+
 
 class UserSearchListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -125,5 +132,3 @@ class UserSearchListSerializer(serializers.ModelSerializer):
             'username',
             'full_name',
         )
-
-

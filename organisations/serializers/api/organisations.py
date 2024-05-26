@@ -14,13 +14,14 @@ from users.serializers.nested.users import UserShortSerializer
 from django.contrib.auth import get_user_model
 
 from django.db import transaction
-import pdb
 
 
 User = get_user_model()
 
+
 class OrganisationSearchListSerializer(ExtendedModelSerializer):
     director = UserShortSerializer()
+
     class Meta:
         model = Organisation
         fields = (
@@ -28,6 +29,7 @@ class OrganisationSearchListSerializer(ExtendedModelSerializer):
             'name',
             'director',
         )
+
 
 class OrganisationListSerializer(InfoModelSerializer):
     director = UserShortSerializer()
@@ -47,12 +49,13 @@ class OrganisationListSerializer(InfoModelSerializer):
             'can_manage',
         )
 
+
 class OrganisationRetriveSerializer(InfoModelSerializer):
     director = UserShortSerializer()
     pax = serializers.IntegerField()
     groups_count = serializers.IntegerField()
     can_manage = serializers.BooleanField()
-    
+
     class Meta:
         model = Organisation
         fields = (
@@ -65,7 +68,8 @@ class OrganisationRetriveSerializer(InfoModelSerializer):
             'can_manage',
         )
 
-class OrganisationCreateSerializer(ExtendedModelSerializer):    
+
+class OrganisationCreateSerializer(ExtendedModelSerializer):
     class Meta:
         model = Organisation
         fields = (
@@ -84,18 +88,18 @@ class OrganisationCreateSerializer(ExtendedModelSerializer):
         user = get_current_user()
         attrs['director'] = user
         return attrs
-    
+
     def create(self, validated_data):
         with transaction.atomic():
             instance = super().create(validated_data)
-            
+
             instance.employees.add(
                 validated_data['director'],
                 through_defaults={'position_id': DIRECTOR_POSITION, }
             )
-                
+
         return instance
-        
+
 
 class OrganisationUpdateSerializer(ExtendedModelSerializer):
     class Meta:
@@ -104,5 +108,3 @@ class OrganisationUpdateSerializer(ExtendedModelSerializer):
             'id',
             'name',
         )
-
-

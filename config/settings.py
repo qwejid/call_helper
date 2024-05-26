@@ -1,6 +1,7 @@
 from datetime import timedelta
 import os
-import environ 
+import environ
+import sentry_sdk
 
 root = environ.Path(__file__) - 2
 env = environ.Env()
@@ -25,12 +26,14 @@ INSTALLED_APPS = [
 
 # packages
 INSTALLED_APPS += [
-    'rest_framework',
-    'django_filters',
-    'corsheaders',
-    'djoser',
-    'phonenumber_field',
-    'django_generate_series'
+    'auditlog',  # Регистрация изменений в моделях
+    'rest_framework',  # REST framework для создания API
+    'django_filters',  # Фильтры для REST framework
+    'corsheaders',  # Заголовки CORS для управления междоменными запросами
+    'djoser',  # Djoser для обработки аутентификации и управления пользователями через REST API
+    'phonenumber_field',  # Поле для ввода телефонных номеров
+    'django_generate_series',  # Генерация временных рядов и последовательностей в PostgreSQL
+    "debug_toolbar",  # Инструмент отладки Django
 ]
 
 # apps
@@ -40,7 +43,6 @@ INSTALLED_APPS += [
     'users',
     'breaks',
     'organisations',
-    
 ]
 
 # after apps
@@ -50,6 +52,7 @@ INSTALLED_APPS += [
 
 
 MIDDLEWARE = [
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -59,6 +62,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "crum.CurrentRequestUserMiddleware",
+    "auditlog.middleware.AuditlogMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -105,13 +109,15 @@ AUTHENTICATION_BACKENDS = ('users.backends.AuthBackend',)
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSIONS_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",),
-    
+
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.BasicAuthentication',
+
     ],
 
-    "DEFAULT_PARSER_CLASSES" : [
+    "DEFAULT_PARSER_CLASSES": [
         "rest_framework.parsers.JSONParser",
         "rest_framework.parsers.FormParser",
         "rest_framework.parsers.MultiPartParser",
@@ -124,20 +130,20 @@ REST_FRAMEWORK = {
 }
 
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
-]
+# AUTH_PASSWORD_VALIDATORS = [
+#     {
+#         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+#     },
+#     {
+#         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+#     },
+#     {
+#         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+#     },
+#     {
+#         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+#     },
+# ]
 
 
 #####################################
@@ -155,7 +161,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR,'media/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -174,18 +180,18 @@ CSRF_COOKIE_SECURE = False
 #####################################
 
 SPECTACULAR_SETTINGS = {
-    "TITLE" : 'Call Helper',
-    "DESCRIPTION" : 'Call Helper Documentation',
-    "VERSION" : '1.0.0',
+    "TITLE": 'Call Helper',
+    "DESCRIPTION": 'Call Helper Documentation',
+    "VERSION": '1.0.0',
 
-    "SERVE_PERMISIONS" : [
+    "SERVE_PERMISIONS": [
         'rest_framework.permissions.IsAuthenticated',
     ],
 
-    "SERVE_AUTHENTICATION" : [
+    "SERVE_AUTHENTICATION": [
         'rest_framework.authentication.BasicAuthentication'],
 
-    "SWAGGER_UI_SETTINGS" : {
+    "SWAGGER_UI_SETTINGS": {
         'deepLinking': True,
         "displayOperationId": True,
         "syntaxHighlight.active": True,
@@ -196,12 +202,12 @@ SPECTACULAR_SETTINGS = {
         "requestSnippetsEnabled": True,
     },
 
-    "COMPONENT_SPLIT_REQUEST" : True,
-    "SORT_OPERATIONS" : False,
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SORT_OPERATIONS": False,
 
     'ENABLE_DJANGO_DEPLOY_CHECK': False,
     'DISABLE_ERRORS_AND_WARNINGS': True,
-    
+
 }
 
 #######################
@@ -241,3 +247,16 @@ SIMPLE_JWT = {
 }
 
 
+################################
+# SENTRY
+################################
+
+sentry_sdk.init(
+    dsn=env.str('SENTRY_DSN', ''),
+    traces_sample_rate=1.0,
+    profiles_sample_rate=1.0,
+)
+
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
