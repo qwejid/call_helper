@@ -33,7 +33,7 @@ INSTALLED_APPS += [
     'djoser',  # Djoser для обработки аутентификации и управления пользователями через REST API
     'phonenumber_field',  # Поле для ввода телефонных номеров
     'django_generate_series',  # Генерация временных рядов и последовательностей в PostgreSQL
-    "debug_toolbar",  # Инструмент отладки Django
+    # "debug_toolbar",  # Инструмент отладки Django
 ]
 
 # apps
@@ -53,7 +53,7 @@ INSTALLED_APPS += [
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    # "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -170,10 +170,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # CORS HEADERS
 #####################################
 
-# CORS_ORIGIN_ALLOW_ALL = True
-# CORS_ALLOW_CREDENTIALS = True
-# CORS_ALLOW_HEADERS = ['*']
-# CSRF_COOKIE_SECURE = False
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = ['*']
+CSRF_COOKIE_SECURE = False
 
 #####################################
 # DRF SPECTACULAR
