@@ -63,6 +63,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "crum.CurrentRequestUserMiddleware",
     "auditlog.middleware.AuditlogMiddleware",
+    'request_logging.middleware.LoggingMiddleware',
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -261,3 +262,21 @@ if DEBUG:
     INTERNAL_IPS = [
         '127.0.0.1',
     ]
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'DEBUG',  # change debug level as appropiate
+            'propagate': False,
+        },
+    },
+}
