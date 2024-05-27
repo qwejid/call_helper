@@ -57,7 +57,7 @@ class Employee(models.Model):
     def __str__(self):
         return f'Employee #{self.pk} {self.user}'
 
-    @property    
+    @property
     def is_director(self):
         if self.position_id == DIRECTOR_POSITION:
             return True

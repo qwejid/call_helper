@@ -1,9 +1,20 @@
 from rest_framework.permissions import SAFE_METHODS,  \
     IsAuthenticated
+# import pdb
 
 
 class IsMyOrganisation(IsAuthenticated):
+    def has_permission(self, request, view):
+        # pdb.set_trace()
+        try:
+            org_id = request.parser_context['kwargs']['pk']
+            user = request.user
+            return user.organisations_info.filter(organisation_id=org_id).exists()
+        except KeyError:
+            return True
+
     def has_object_permission(self, request, view, obj):
+        # pdb.set_trace()
         if obj.director == request.user:
             return True
 
@@ -13,7 +24,7 @@ class IsMyOrganisation(IsAuthenticated):
         return False
 
 
-class IsColleagues(IsAuthenticated):
+class IsColleagues(IsMyOrganisation):
     def has_object_permission(self, request, view, obj):
         if obj.organisation.director == request.user:
             return True
@@ -24,7 +35,7 @@ class IsColleagues(IsAuthenticated):
         return False
 
 
-class IsMembers(IsAuthenticated):
+class IsMembers(IsMyOrganisation):
     def has_object_permission(self, request, view, obj):
         if (
             obj.group.organisation.director == request.user
