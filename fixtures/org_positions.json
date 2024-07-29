@@ -1,0 +1,32 @@
+[
+{
+  "model": "organisations.position",
+  "pk": "1",
+  "fields": {
+    "name": "director",
+    "sort": 10,
+    "is_active": true,
+    "color": "#BDECB6"
+  }
+},
+{
+  "model": "organisations.position",
+  "pk": "2",
+  "fields": {
+    "name": "manager",
+    "sort": 10,
+    "is_active": true,
+    "color": "#BDECB6"
+  }
+},
+{
+  "model": "organisations.position",
+  "pk": "3",
+  "fields": {
+    "name": "operator",
+    "sort": 10,
+    "is_active": true,
+    "color": "#BDECB6"
+  }
+}
+]

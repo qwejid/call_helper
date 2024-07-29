@@ -1,80 +1,58 @@
 from django.contrib import admin
 from django.contrib.admin import TabularInline
 from django.urls import reverse
-from breaks.models import organisations, groups, replacement, dicts, breaks
-from django.db.models import Count
+from breaks.models import dicts, breaks, replacements
 from django.utils.html import format_html
 
 ########################################################
 # INLINES
 ########################################################
-class ReplacementEmployeeInline(TabularInline):
-    model = replacement.ReplacementEmployee
-    fields = ('employee', 'status',)
 
 
+class ReplacementMemberInline(TabularInline):
+    model = replacements.ReplacementMember
+    fields = (
+        'member', 'status',
+        'time_online', 'time_offline', 'time_break_start', 'time_break_end',
+    )
+    readonly_fields = (
+        'time_online', 'time_offline', 'time_break_start', 'time_break_end',
+    )
 
 
 ########################################################
 # MODELS
 ########################################################
 
-@admin.register(organisations.Organisation)
-class OrganisationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'director')
-    filter_horizontal = ('employees', )
-
-@admin.register(groups.Group)
-class GroupAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'manager', 'min_active', 'replacement_count',)
-    list_display_links = ('id', 'name',)
-    search_fields = ("name",)
-    def replacement_count(self, obj):        
-        return obj.replacement_count
-    
-    replacement_count.short_description = 'Кол-во смен'
-
-    def get_queryset(self, obj):
-        queryset = groups.Group.objects.annotate(
-            replacement_count = Count("replacements__id")
-        )
-        return queryset
-
-
 @admin.register(dicts.ReplacementStatus)
 class ReplacementStatusAdmin(admin.ModelAdmin):
     list_display = (
-        'code', 'name', 'sort', 'is_active', )
+        'code', 'name', 'sort', 'is_active',
+    )
 
-@admin.register(dicts.BreakStatus)
-class BreakStatusAdmin(admin.ModelAdmin):
-    list_display = (
-        'code', 'name', 'sort', 'is_active',)
 
-@admin.register(replacement.Replacement)
+@admin.register(replacements.Replacement)
 class ReplacementAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'group', 'date', 'break_start', 'break_end', 'break_max_duration',
     )
-    autocomplete_fields = ('group',)
     inlines = (
-        ReplacementEmployeeInline,
+        ReplacementMemberInline,
     )
+    readonly_fields = (
+        'created_at', 'created_by', 'updated_at', 'updated_by',
+    )
+
 
 @admin.register(breaks.Break)
 class BreakAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'replacement_link', 'break_start', 'break_end', "status",
+        'id', 'replacement_link', 'break_start', 'break_end',
     )
-    list_filter = ('status',)
     empty_value_display = 'Unknown'
-    radio_fields = {'status' : admin.VERTICAL}
+
     def replacement_link(self, obj):
         link = reverse(
             'admin:breaks_replacement_change', args=[obj.replacement.id]
         )
         return format_html('<a href="{}">{}</a>', link, obj.replacement)
-
-
-
-

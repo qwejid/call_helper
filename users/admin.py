@@ -1,14 +1,29 @@
 from django.contrib import admin
-from users.models.users import User
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
+from users.models.profile import Profile
+from users.models.users import User
+
+########################################################
+# INLINES
+########################################################
+
+
+class ProfileAdmin(admin.StackedInline):
+    model = Profile
+    fields = ('telegram_id',)
+
+########################################################
+# MODELS
+########################################################
+
 
 @admin.register(User)
-class UserAdmin(UserAdmin): 
+class UserAdmin(UserAdmin):
     change_user_password_template = None
     fieldsets = (
-        (None, {'fields': ('username', 'phone_number', 'email', )}),
+        (None, {'fields': ('phone_number', 'email', 'username', 'is_corporate_account')}),
         (_('Личная информация'),
          {'fields': ('first_name', 'last_name',)}),
         (_('Permissions'), {
@@ -22,15 +37,13 @@ class UserAdmin(UserAdmin):
             'fields': ('email', 'phone_number', 'password1', 'password2',),
         }),
     )
-    list_display = ('id', 'full_name', 'email', 'phone_number',)
+    list_display = ('id', 'full_name', 'email', 'phone_number', )
 
-    list_display_links = ('id', 'full_name')
+    list_display_links = ('id', 'full_name',)
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     search_fields = ('first_name', 'last_name', 'id', 'email', 'phone_number',)
     ordering = ('-id',)
     filter_horizontal = ('groups', 'user_permissions',)
     readonly_fields = ('last_login',)
 
-   
-
-
+    inlines = (ProfileAdmin,)
